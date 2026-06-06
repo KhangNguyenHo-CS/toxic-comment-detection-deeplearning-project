@@ -29,4 +29,17 @@ vectorizer = TextVectorization(max_tokens=max_words,
                                output_mode='int', 
                                output_sequence_length=1800) 
 
-#vectorizer.adapt(X.values) # Adapt the vectorizer to the text data (X)
+if not os.path.exists("vectorizer_vocab.txt"):
+    print("Adapting vectorizer and saving vocabulary...")
+    vectorizer.adapt(X.values) # Adapt the vectorizer to the text data (X)
+    vocab = vectorizer.get_vocabulary() 
+    with open("vectorizer_vocab.txt", "w", encoding="utf-8") as f:
+        for word in vocab:
+            f.write(word + "\n") 
+else:
+    print("Loading existing vocabulary...")
+    with open("vectorizer_vocab.txt", "r", encoding="utf-8") as f:
+        vocab = [line.rstrip("\n") for line in f]
+
+vectorizer.set_vocabulary(vocab)
+print(vectorizer('Fuck you Khang, you are the worse'))
