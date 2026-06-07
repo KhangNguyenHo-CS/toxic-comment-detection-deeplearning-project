@@ -23,7 +23,7 @@ df = pd.read_csv(file_path)
 #
 # ---------------------------------------
 X = df['comment_text'] # The 'comment_text' column contains the text of the comments, which will be our input features (X).
-Y = df.iloc[:, 2:].values # ..
+Y = df.iloc[:, 2:].values # We use .values to convert the DataFrame into a NumPy array.
 max_words = 20000 # The maximum number of words
 vectorizer = TextVectorization(max_tokens=max_words, 
                                output_mode='int', 
@@ -43,3 +43,4 @@ else:
 
 vectorizer.set_vocabulary(vocab)
 print(vectorizer('Fuck you Khang, you are the worse'))
+
