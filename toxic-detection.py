@@ -68,17 +68,28 @@ train = dataset.take(int(len(dataset)*0.7)) # Take the first 70% of the dataset 
 valid = dataset.skip(int(len(dataset)*0.7)).take(int(len(dataset)*0.2)) # Skip the first 70% and take the next 20% for validation
 test = dataset.skip(int(len(dataset)*0.9)).take(int(len(dataset)*0.1)) # Skip the first 90% and take the last 10% for testing
 
-print(train.as_numpy_iterator().next())
+# (train.as_numpy_iterator().next())
 
 # --------------------------------------
 # CREATE MODEL
 # --------------------------------------
 
 model = Sequential()
-
+# Create the embedding layer
 model.add(Embedding(max_words+1, 32)) # Add an embedding layer to the model with a vocabulary size of max_words + 1 and an output dimension of 128.
+# Bidirectional LSTM layer
 model.add(Bidirectional(LSTM(32, activation='tanh'))) # Add a bidirectional LSTM layer with 64 units and return sequences set to True.
+# Feature extractor Fully connected layers (hidden layers)
 model.add(Dense(128, activation='relu')) # Add a dense layer with 128 units and ReLU activation.
 model.add(Dense(256, activation='relu')) # Add a dense layer with 256 units and ReLU activation.
 model.add(Dense(128, activation='relu')) # Add a dense layer with 128 units and ReLU activation.
+# Final layer (output layer)
 model.add(Dense(6, activation='sigmoid')) # Add a dense output layer with 6 units and sigmoid activation for multi-label classification.
+
+model.compile(loss = 'BinaryCrossentropy', optimizer = 'Adam')
+model.summary()
+
+history = model.fit(train, epochs = 1, validation_data = valid)
+
+
+
