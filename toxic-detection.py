@@ -6,7 +6,9 @@ import pandas as pd
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.layers import TextVectorization, LSTM, Dropout, Bidirectional, Dense, Embedding
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.callbacks import ModelCheckpoint
+from matplotlib import pyplot as plt
 
 file_path = os.path.join('data', 'train.csv')
 df = pd.read_csv(file_path)
@@ -74,22 +76,33 @@ test = dataset.skip(int(len(dataset)*0.9)).take(int(len(dataset)*0.1)) # Skip th
 # CREATE MODEL
 # --------------------------------------
 
-model = Sequential()
-# Create the embedding layer
-model.add(Embedding(max_words+1, 32)) # Add an embedding layer to the model with a vocabulary size of max_words + 1 and an output dimension of 128.
-# Bidirectional LSTM layer
-model.add(Bidirectional(LSTM(32, activation='tanh'))) # Add a bidirectional LSTM layer with 64 units and return sequences set to True.
-# Feature extractor Fully connected layers (hidden layers)
-model.add(Dense(128, activation='relu')) # Add a dense layer with 128 units and ReLU activation.
-model.add(Dense(256, activation='relu')) # Add a dense layer with 256 units and ReLU activation.
-model.add(Dense(128, activation='relu')) # Add a dense layer with 128 units and ReLU activation.
-# Final layer (output layer)
-model.add(Dense(6, activation='sigmoid')) # Add a dense output layer with 6 units and sigmoid activation for multi-label classification.
+model_path = "toxic_model.keras"
 
-model.compile(loss = 'BinaryCrossentropy', optimizer = 'Adam')
-model.summary()
+if os.path.exists(model_path):
+    print("Loading trained model...")
+    model = load_model(model_path)
+else:
+    print("Training model")
+    print("Save into: " , model_path)
+    model = Sequential()
+    # Create the embedding layer
+    model.add(Embedding(max_words+1, 32)) # Add an embedding layer to the model with a vocabulary size of max_words + 1 and an output dimension of 128.
+    # Bidirectional LSTM layer
+    model.add(Bidirectional(LSTM(32, activation='tanh'))) # Add a bidirectional LSTM layer with 64 units and return sequences set to True.
+    # Feature extractor Fully connected layers (hidden layers)
+    model.add(Dense(128, activation='relu')) # Add a dense layer with 128 units and ReLU activation.
+    model.add(Dense(256, activation='relu')) # Add a dense layer with 256 units and ReLU activation.
+    model.add(Dense(128, activation='relu')) # Add a dense layer with 128 units and ReLU activation.
+    # Final layer (output layer)
+    model.add(Dense(6, activation='sigmoid')) # Add a dense output layer with 6 units and sigmoid activation for multi-label classification.
 
-history = model.fit(train, epochs = 1, validation_data = valid)
+    model.compile(loss = 'BinaryCrossentropy', optimizer = 'Adam')
+    model.summary()
+
+    history = model.fit(train, epochs = 15, validation_data = valid)
+
+    model.save(model_path)
+    print("Model train successfully")
 
 
 
