@@ -81,6 +81,7 @@ model_path = "toxic_model.keras"
 if os.path.exists(model_path):
     print("Loading trained model...")
     model = load_model(model_path)
+    print("Model loaded successfully")
 else:
     print("Training model")
     print("Save into: " , model_path)
@@ -104,5 +105,22 @@ else:
     model.save(model_path)
     print("Model train successfully")
 
+# For ploting the training history
 
+#print("Evaluating model...")
+#history = model.fit(train, epochs = 1, validation_data = valid)
+#print(history.history)
+#plt.figure(figsize=(12, 6))
+#pd.DataFrame(history.history).plot()
+#plt.show()
+
+# ---------------------------------------
+
+input_text = vectorizer("i want to kill the whole world ") 
+print(input_text)
+print(df.columns[2:])
+print(model.predict(np.array([input_text])))
+
+#batch = test.as_numpy_iterator().next()
+#res = model.predict(np.expand_dims(input_text, axis=0))
 
