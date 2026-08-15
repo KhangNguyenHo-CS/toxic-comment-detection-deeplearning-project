@@ -8,6 +8,7 @@ import numpy as np
 from tensorflow.keras.layers import TextVectorization, LSTM, Dropout, Bidirectional, Dense, Embedding
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
 from matplotlib import pyplot as plt
 
 file_path = os.path.join('data', 'train.csv')
@@ -116,11 +117,40 @@ else:
 
 # ---------------------------------------
 
-input_text = vectorizer("i want to kill the whole world ") 
+input_text = vectorizer("I love you so much") 
 print(input_text)
 print(df.columns[2:])
-print(model.predict(np.array([input_text])))
-
-#batch = test.as_numpy_iterator().next()
+batch = test.as_numpy_iterator().next()
+batch_X, batch_Y = batch
+#print(model.predict(np.array([input_text])))
+#print(model.predict(batch_X))
+#print((model.predict(batch_X) > 0.5).astype(int))
 #res = model.predict(np.expand_dims(input_text, axis=0))
+#res = model.predict(batch_X)
+#print(res)
 
+#Evaluate the Model
+pre = Precision()
+re = Recall()
+acc = BinaryAccuracy()
+
+for batch in test.as_numpy_iterator():
+    #unpack the batch
+    x_true, y_true = batch
+
+    #Make a prediction
+    yhat = model.predict(x_true)
+
+
+    #Flatten the predictions
+    y_true = y_true.flatten()
+    yhat = yhat.flatten()
+
+    pre.update_state(y_true, yhat)
+    re.update_state(y_true, yhat)
+    acc.update_state(y_true, yhat)
+
+
+print(f'''Precision: {pre.result().numpy()},
+      Recall: {re.result().numpy()}, 
+      Accuracy: {acc.result().numpy()}''')
