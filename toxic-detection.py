@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import tensorflow as tf
 import numpy as np
+import gradio as gr
 from tensorflow.keras.layers import TextVectorization, LSTM, Dropout, Bidirectional, Dense, Embedding
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -134,23 +135,42 @@ pre = Precision()
 re = Recall()
 acc = BinaryAccuracy()
 
-for batch in test.as_numpy_iterator():
-    #unpack the batch
-    x_true, y_true = batch
+# for batch in test.as_numpy_iterator():
+#     #unpack the batch
+#     x_true, y_true = batch
 
-    #Make a prediction
-    yhat = model.predict(x_true)
-
-
-    #Flatten the predictions
-    y_true = y_true.flatten()
-    yhat = yhat.flatten()
-
-    pre.update_state(y_true, yhat)
-    re.update_state(y_true, yhat)
-    acc.update_state(y_true, yhat)
+#     #Make a prediction
+#     yhat = model.predict(x_true)
 
 
-print(f'''Precision: {pre.result().numpy()},
-      Recall: {re.result().numpy()}, 
-      Accuracy: {acc.result().numpy()}''')
+#     #Flatten the predictions
+#     y_true = y_true.flatten()
+#     yhat = yhat.flatten()
+
+#     pre.update_state(y_true, yhat)
+#     re.update_state(y_true, yhat)
+#     acc.update_state(y_true, yhat)
+
+
+# print(f'''Precision: {pre.result().numpy()},
+#       Recall: {re.result().numpy()}, 
+#       Accuracy: {acc.result().numpy()}''')
+
+# Test and Gradio
+model = tf.keras.models.load_model(model_path)
+input_str = vectorizer("I miss you")
+res = model.predict(np.expand_dims(input_str, axis=0))
+print(res > 0.5)
+
+def score_comment(comment):
+    vectorized_comment = vectorizer([comment])
+    results = model.predict(vectorized_comment)
+
+    text = ''
+    for i, col in enumerate(df.columns[2:]):
+        text += '{}: {}\n'.format(col, results[0][i]>0.5)
+
+    return text
+
+interface = gr.Interface(fn=score_comment, inputs=gr.Textbox(lines=5, placeholder="Please enter your comment: "), outputs="text", title="Toxic Comment Detection", description="Enter a comment to check if it is toxic or not.")
+interface.launch(share=True)
